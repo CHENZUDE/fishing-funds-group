@@ -1,0 +1,46 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 600px;
+}
+
+.formSection {
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+
+  h3 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.colorPicker {
+  display: flex;
+  align-items: center;
+}
+
+.listSection {
+  flex: 1;
+  overflow-y: auto;
+
+  h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  :global(.ant-list) {
+    padding: 0;
+  }
+
+  :global(.ant-list-item) {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color-light);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}

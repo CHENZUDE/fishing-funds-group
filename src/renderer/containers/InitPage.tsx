@@ -22,6 +22,7 @@ import { syncTabsActiveKeyAction } from '@/store/features/tabs';
 import { setWebConfigAction, defaultWebConfig } from '@/store/features/web';
 import { syncVersion } from '@/store/features/updater';
 import { syncTranslateSettingAction, defaultTranslateSetting } from '@/store/features/translate';
+import { initCustomGroupsAction } from '@/store/features/customGroup';
 import { useDrawer, useAppDispatch } from '@/utils/hooks';
 import { syncFavoriteQuotationMapAction } from '@/store/features/quotation';
 import * as CONST from '@/constants';
@@ -98,6 +99,9 @@ const InitPage = () => {
     dispatch(changeCurrentWalletCodeAction(allConfigStorage[CONST.STORAGE.CURRENT_WALLET_CODE] || defaultWallet.code));
     // 翻译配置加载完成
     dispatch(syncTranslateSettingAction(allConfigStorage[CONST.STORAGE.TRANSLATE_SETTING] || defaultTranslateSetting));
+    // 自定义分组加载完成
+    const customGroupConfig = allConfigStorage[CONST.STORAGE.CUSTOM_GROUP_SETTING] || { fundGroups: [], stockGroups: [] };
+    dispatch(initCustomGroupsAction(customGroupConfig));
     /**
      * state部分
      */

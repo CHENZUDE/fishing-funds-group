@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { RiEditLine, RiArrowDownSLine, RiArrowUpSLine, RiDeleteBin6Line } from 'react-icons/ri';
 import Collapse from '@/components/Collapse';
 import MemoNote from '@/components/MemoNote';
+import GroupMenu from './GroupMenu';
 import { toggleFundCollapseAction } from '@/store/features/wallet';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import * as Utils from '@/utils';
@@ -114,6 +115,7 @@ const FundRow: React.FC<RowProps> = (props) => {
             <span>{calcFundResult.cyfe}</span>
             <RiEditLine className={styles.editor} onClick={onEditClick} />
             <RiDeleteBin6Line className={styles.editor} onClick={onDeleteClick} />
+            <GroupMenu fundCode={fund.fundcode!} onSuccess={() => {}} />
           </section>
           <section>
             <span>成本金额：</span>

@@ -19,6 +19,8 @@ import PureCard from '@/components/Card/PureCard';
 import StandCard from '@/components/Card/StandCard';
 import Logo from '@/components/Logo';
 import CustomDrawerContent from '@/components/CustomDrawer/Content';
+import CustomGroupManager from '@/components/CustomGroupManager';
+import GroupSortManager from '@/components/GroupSortManager';
 import Guide from '@/components/Guide';
 import Log from '@/components/Toolbar/SettingContent/Log';
 import ThemeProvider from '@/components/ThemeProvider';
@@ -75,6 +77,10 @@ const presetColors = [
 ];
 
 const SettingContent: React.FC<SettingContentProps> = (props) => {
+  const [fundGroupManagerVisible, setFundGroupManagerVisible] = useState(false);
+  const [stockGroupManagerVisible, setStockGroupManagerVisible] = useState(false);
+  const [fundGroupSortVisible, setFundGroupSortVisible] = useState(false);
+  const [stockGroupSortVisible, setStockGroupSortVisible] = useState(false);
   const dispatch = useAppDispatch();
   const sortableRef = useAutoDestroySortableRef();
   const {
@@ -750,11 +756,49 @@ const SettingContent: React.FC<SettingContentProps> = (props) => {
             },
             {
               key: String(2),
+              label: '自定义分组',
+              children: (
+                <div className={styles.content}>
+                  <StandCard icon={<RiFolderSettingsLine />} title="基金分组">
+                    <div className={clsx(styles.setting, 'card-body')}>
+                      <section>
+                        <Button type="primary" onClick={() => setFundGroupManagerVisible(true)}>
+                          管理基金分组
+                        </Button>
+                        <Button onClick={() => setFundGroupSortVisible(true)} style={{ marginLeft: 8 }}>
+                          排序分组
+                        </Button>
+                      </section>
+                      <p style={{ marginTop: 12, fontSize: 12, color: 'var(--text-color-secondary)' }}>
+                        创建自定义基金分组，将你的基金按需分类管理
+                      </p>
+                    </div>
+                  </StandCard>
+                  <StandCard icon={<RiFolderSettingsLine />} title="股票分组">
+                    <div className={clsx(styles.setting, 'card-body')}>
+                      <section>
+                        <Button type="primary" onClick={() => setStockGroupManagerVisible(true)}>
+                          管理股票分组
+                        </Button>
+                        <Button onClick={() => setStockGroupSortVisible(true)} style={{ marginLeft: 8 }}>
+                          排序分组
+                        </Button>
+                      </section>
+                      <p style={{ marginTop: 12, fontSize: 12, color: 'var(--text-color-secondary)' }}>
+                        创建自定义股票分组，将你的股票按需分类管理
+                      </p>
+                    </div>
+                  </StandCard>
+                </div>
+              ),
+            },
+            {
+              key: String(3),
               label: '更新日志',
               children: <Log />,
             },
             {
-              key: String(3),
+              key: String(4),
               label: '更多信息',
               children: <More />,
             },
@@ -765,6 +809,30 @@ const SettingContent: React.FC<SettingContentProps> = (props) => {
             退出程序
           </Button>
         </div>
+
+        <CustomGroupManager
+          visible={fundGroupManagerVisible}
+          type="fund"
+          onClose={() => setFundGroupManagerVisible(false)}
+        />
+
+        <CustomGroupManager
+          visible={stockGroupManagerVisible}
+          type="stock"
+          onClose={() => setStockGroupManagerVisible(false)}
+        />
+
+        <GroupSortManager
+          visible={fundGroupSortVisible}
+          type="fund"
+          onClose={() => setFundGroupSortVisible(false)}
+        />
+
+        <GroupSortManager
+          visible={stockGroupSortVisible}
+          type="stock"
+          onClose={() => setStockGroupSortVisible(false)}
+        />
       </CustomDrawerContent>
     </ThemeProvider>
   );

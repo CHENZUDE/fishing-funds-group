@@ -36,37 +36,79 @@ export interface HomeProps {}
 
 function FundGroup() {
   const codeMap = useAppSelector((state) => state.wallet.fundConfigCodeMap);
+  const fundGroups = useAppSelector((state) => state.customGroup.fundGroups);
+  const fundAllGroupOrder = useAppSelector((state) => state.customGroup.fundAllGroupOrder);
+
+  // 固定分组的key列表
+  const fixedGroupKeys = ['0', '1', '2', '3', '4'];
+
+  // 定义所有固定分组
+  const fixedGroups: Array<{ key: string; label: string; filter: (fund: any) => boolean }> = [
+    {
+      key: '0',
+      label: '全部',
+      filter: () => true,
+    },
+    {
+      key: '1',
+      label: '持有',
+      filter: (fund) => !!codeMap[fund.fundcode!]?.cyfe,
+    },
+    {
+      key: '2',
+      label: '自选',
+      filter: (fund) => !codeMap[fund.fundcode!]?.cyfe,
+    },
+    {
+      key: '3',
+      label: '含成本价',
+      filter: (fund) => !!codeMap[fund.fundcode!]?.cbj,
+    },
+    {
+      key: '4',
+      label: '净值更新',
+      filter: (fund) => !!Helpers.Fund.CalcFund(fund, codeMap).isFix,
+    },
+  ];
+
+  // 获取所有已分组的代码（只从自定义分组）
+  const groupedFundCodes = new Set<string>();
+  fundGroups.forEach((group) => {
+    group.codes.forEach((code) => groupedFundCodes.add(code));
+  });
+
+  // 构建所有分组项目
+  const allGroupItems = [
+    ...fixedGroups.map((g) => ({
+      key: g.key,
+      label: g.label,
+      children: <FundView filter={g.filter} />,
+    })),
+    {
+      key: 'fund-ungrouped',
+      label: '未分组',
+      children: <FundView filter={(fund) => !groupedFundCodes.has(fund.fundcode!)} />,
+    },
+    ...fundGroups.map((group) => ({
+      key: `fund-group-${group.id}`,
+      label: group.name,
+      children: <FundView filter={(fund) => group.codes.includes(fund.fundcode!)} />,
+    })),
+  ];
+
+  // 根据保存的排序重新排列，如果没有保存排序则使用默认顺序
+  // 默认顺序：固定分组 -> 未分组 -> 自定义分组
+  const orderedItems = fundAllGroupOrder.length > 0
+    ? fundAllGroupOrder
+        .map((key) => allGroupItems.find((item) => item.key === key))
+        .filter((item) => item !== undefined)
+        .concat(allGroupItems.filter((item) => !fundAllGroupOrder.includes(item.key)))
+    : allGroupItems;
 
   return (
     <GroupTab
       tabKey={Enums.TabKeyType.Fund}
-      items={[
-        {
-          key: String(0),
-          label: '全部',
-          children: <FundView filter={() => true} />,
-        },
-        {
-          key: String(1),
-          label: '持有',
-          children: <FundView filter={(fund) => !!codeMap[fund.fundcode!]?.cyfe} />,
-        },
-        {
-          key: String(2),
-          label: '自选',
-          children: <FundView filter={(fund) => !codeMap[fund.fundcode!]?.cyfe} />,
-        },
-        {
-          key: String(3),
-          label: '含成本价',
-          children: <FundView filter={(fund) => !!codeMap[fund.fundcode!]?.cbj} />,
-        },
-        {
-          key: String(4),
-          label: '净值更新',
-          children: <FundView filter={(fund) => !!Helpers.Fund.CalcFund(fund, codeMap).isFix} />,
-        },
-      ]}
+      items={orderedItems}
     />
   );
 }
@@ -142,27 +184,57 @@ function QuotationGroup() {
 
 function StockGroup() {
   const codeMap = useAppSelector((state) => state.wallet.stockConfigCodeMap);
+  const stockGroups = useAppSelector((state) => state.customGroup.stockGroups);
+  const stockAllGroupOrder = useAppSelector((state) => state.customGroup.stockAllGroupOrder);
+
+  // 获取所有已分组的代码（只从自定义分组）
+  const groupedStockCodes = new Set<string>();
+  stockGroups.forEach((group) => {
+    group.codes.forEach((code) => groupedStockCodes.add(code));
+  });
+
+  // 构建所有分组项目
+  const allGroupItems = [
+    {
+      key: String(-1),
+      label: '全部',
+      children: <StockView filter={() => true} />,
+    },
+    {
+      key: String(-2),
+      label: '持有',
+      children: <StockView filter={(stock) => !!codeMap[stock.secid]?.cyfe} />,
+    },
+    ...stockTypesConfig.map((type) => ({
+      key: String(type.code),
+      label: type.name,
+      children: <StockView filter={(stock) => codeMap[stock.secid].type === type.code} />,
+    })),
+    {
+      key: 'stock-ungrouped',
+      label: '未分组',
+      children: <StockView filter={(stock) => !groupedStockCodes.has(stock.secid)} />,
+    },
+    ...stockGroups.map((group) => ({
+      key: `stock-group-${group.id}`,
+      label: group.name,
+      children: <StockView filter={(stock) => group.codes.includes(stock.secid)} />,
+    })),
+  ];
+
+  // 根据保存的排序重新排列，如果没有保存排序则使用默认顺序
+  // 默认顺序：全部 -> 持有 -> 股票类型 -> 未分组 -> 自定义分组
+  const orderedItems = stockAllGroupOrder.length > 0
+    ? stockAllGroupOrder
+        .map((key) => allGroupItems.find((item) => item.key === key))
+        .filter((item) => item !== undefined)
+        .concat(allGroupItems.filter((item) => !stockAllGroupOrder.includes(item.key)))
+    : allGroupItems;
 
   return (
     <GroupTab
       tabKey={Enums.TabKeyType.Stock}
-      items={[
-        {
-          key: String(-1),
-          label: '全部',
-          children: <StockView filter={() => true} />,
-        },
-        {
-          key: String(-2),
-          label: '持有',
-          children: <StockView filter={(stock) => !!codeMap[stock.secid]?.cyfe} />,
-        },
-        ...stockTypesConfig.map((type) => ({
-          key: String(type.code),
-          label: type.name,
-          children: <StockView filter={(stock) => codeMap[stock.secid].type === type.code} />,
-        })),
-      ]}
+      items={orderedItems}
     />
   );
 }

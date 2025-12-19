@@ -5,6 +5,8 @@ declare namespace Wallet {
     code: string;
     funds: Fund.SettingItem[];
     stocks: Stock.SettingItem[];
+    fundGroups?: CustomGroup[];
+    stockGroups?: CustomGroup[];
   }
   export interface StateItem {
     code: string;
@@ -21,5 +23,13 @@ declare namespace Wallet {
 
   export interface SortRow {
     id: string;
+  }
+  
+  export interface CustomGroup {
+    id: string;
+    name: string;
+    type: 'fund' | 'stock';
+    codes: string[];
+    color?: string;
   }
 }

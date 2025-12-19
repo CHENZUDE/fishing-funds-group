@@ -31,7 +31,11 @@ const GroupTab = (props: GroupTabProps) => {
     [props.items]
   );
 
-  const onTagChange = (e: string) => dispatch(syncTabsKeyMapAction({ key: tabKey, activeKey: Number(e) }));
+  const onTagChange = (e: string) => {
+    // 尝试转换为数字，如果失败则保持字符串
+    const activeKey = isNaN(Number(e)) ? e : Number(e);
+    dispatch(syncTabsKeyMapAction({ key: tabKey, activeKey }));
+  };
 
   return (
     <Tabs

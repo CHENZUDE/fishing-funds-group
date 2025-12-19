@@ -6,6 +6,7 @@ import { RiArrowDownSLine, RiArrowUpSLine, RiEditLine, RiDeleteBin6Line } from '
 import Collapse from '@/components/Collapse';
 import ArrowLine from '@/components/ArrowLine';
 import MemoNote from '@/components/MemoNote';
+import GroupMenu from './GroupMenu';
 import { setIndustryMapAction } from '@/store/features/stock';
 import { toggleStockCollapseAction } from '@/store/features/wallet';
 import { useResizeEchart, useRenderEcharts, useAppDispatch, useAppSelector } from '@/utils/hooks';
@@ -239,6 +240,7 @@ const StockRow: React.FC<RowProps> = (props) => {
             <span>{stockConfig.cyfe || 0}</span>
             <RiEditLine className={styles.editor} onClick={onEditClick} />
             <RiDeleteBin6Line className={styles.editor} onClick={onDeleteClick} />
+            <GroupMenu stockCode={stock.secid} onSuccess={() => {}} />
           </section>
           <section>
             <span>成本金额：</span>

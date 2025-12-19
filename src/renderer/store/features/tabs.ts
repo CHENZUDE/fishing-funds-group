@@ -3,7 +3,7 @@ import * as Enums from '@/utils/enums';
 
 export interface TabsState {
   activeKey: Enums.TabKeyType;
-  tabsKeyMap: Record<Enums.TabKeyType, number>;
+  tabsKeyMap: Record<Enums.TabKeyType, number | string>;
 }
 
 const initialState: TabsState = {
@@ -24,7 +24,7 @@ const tabsSlice = createSlice({
     syncTabsActiveKeyAction(state, { payload }: PayloadAction<Enums.TabKeyType>) {
       state.activeKey = payload;
     },
-    syncTabsKeyMapAction(state, { payload }: PayloadAction<{ key: Enums.TabKeyType; activeKey: number }>) {
+    syncTabsKeyMapAction(state, { payload }: PayloadAction<{ key: Enums.TabKeyType; activeKey: number | string }>) {
       state.tabsKeyMap[payload.key] = payload.activeKey;
     },
   },

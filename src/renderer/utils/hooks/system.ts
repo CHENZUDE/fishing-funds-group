@@ -5,7 +5,7 @@ import { theme } from 'antd';
 import { UnknownAction } from 'redux';
 import dayjs from 'dayjs';
 import NP from 'number-precision';
-import * as StringSimilarity from '@nivalis/string-similarity';
+// 按需动态引入，避免 Vite 对存在不规范 exports 的包进行依赖扫描失败
 import { startListening } from '@/store/listeners';
 import { updateAvaliableAction } from '@/store/features/updater';
 import { setFundConfigAction } from '@/store/features/fund';
@@ -263,8 +263,28 @@ export function useAIImportFunds() {
   const currentWallet = useAppSelector((state) => state.wallet.currentWallet);
   const [funds, setFunds] = useState<FundConfigItem[]>([]);
 
+  // 动态获取 compareTwoStrings，若三方包不可用则使用本地降级算法（bigrams Jaccard）
+  async function getCompareTwoStrings(): Promise<(a: string, b: string) => number> {
+    const grams = (s: string) => {
+      const str = (s || '').toLowerCase();
+      const arr: string[] = [];
+      for (let i = 0; i < str.length - 1; i++) arr.push(str.slice(i, i + 2));
+      return arr;
+    };
+    return (a: string, b: string) => {
+      const A = new Set(grams(a));
+      const B = new Set(grams(b));
+      if (A.size === 0 && B.size === 0) return 1;
+      let inter = 0;
+      for (const x of A) if (B.has(x)) inter++;
+      const union = A.size + B.size - inter;
+      return union === 0 ? 0 : inter / union;
+    };
+  }
+
   const { runAsync: aiParseFunds, loading } = useRequest(
     async (img: string) => {
+      const compareTwoStrings = await getCompareTwoStrings();
       const fundConfigs: FundConfigItem[] = [];
       const response = await openai.chat({
         model: openaiImportFundsModelSetting || openaiBaseModelSetting,
@@ -317,9 +337,7 @@ interface Fund {
          * 持仓成本总金额 / 持有份额 = cbj
          * */
         for (const item of json) {
-          const localFund = currentWallet.funds.find(
-            (fundConfig) => StringSimilarity.compareTwoStrings(item.name, fundConfig.name!) > 0.8
-          );
+          const localFund = currentWallet.funds.find((fundConfig) => compareTwoStrings(item.name, fundConfig.name!) > 0.8);
           // 如果钱包内包含该基金，则使用当前本地的数据
           if (localFund) {
             const cyfe = item.zje / Number(localFund.dwjz);
