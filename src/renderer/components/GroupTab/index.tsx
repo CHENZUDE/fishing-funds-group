@@ -5,12 +5,13 @@ import Empty from '@/components/Empty';
 import { syncTabsKeyMapAction } from '@/store/features/tabs';
 import { useAppDispatch, useAppSelector } from '@/utils/hooks';
 import * as Enums from '@/utils/enums';
+import styles from './index.module.css';
 
 const groupBarStyle = {
   background: 'var(--background-color)',
   borderBottom: `1px solid var(--border-color)`,
   margin: 0,
-  paddingLeft: 25,
+  paddingLeft: 12,
 };
 
 interface GroupTabProps extends TabsProps {
@@ -38,16 +39,20 @@ const GroupTab = (props: GroupTabProps) => {
   };
 
   return (
-    <Tabs
-      size="small"
-      activeKey={String(activeKey)}
-      animated={{ tabPane: true, inkBar: true }}
-      tabBarGutter={15}
-      tabBarStyle={groupBarStyle}
-      destroyOnHidden
-      items={items}
-      onChange={onTagChange}
-    />
+    <div className={styles.wrapper}>
+      <Tabs
+        className={styles.tabs}
+        size="small"
+        activeKey={String(activeKey)}
+        animated={{ tabPane: true, inkBar: true }}
+        tabBarGutter={10}
+        tabBarStyle={groupBarStyle}
+        destroyInactiveTabPane={false}
+        items={items}
+        onChange={onTagChange}
+        tabPosition="top"
+      />
+    </div>
   );
 };
 

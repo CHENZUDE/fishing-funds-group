@@ -8,6 +8,8 @@ export interface CustomGroupState {
   stockGroupOrder: string[]; // 自定义股票分组排序
   fundAllGroupOrder: string[]; // 所有基金分组排序（包括固定分组）
   stockAllGroupOrder: string[]; // 所有股票分组排序（包括固定分组）
+  hiddenFundFixedGroups: string[]; // 隐藏的基金固定分组 keys
+  hiddenStockFixedGroups: string[]; // 隐藏的股票固定分组 keys
 }
 
 const initialState: CustomGroupState = {
@@ -17,6 +19,8 @@ const initialState: CustomGroupState = {
   stockGroupOrder: [],
   fundAllGroupOrder: [],
   stockAllGroupOrder: [],
+  hiddenFundFixedGroups: [],
+  hiddenStockFixedGroups: [],
 };
 
 const customGroupSlice = createSlice({
@@ -181,6 +185,34 @@ const customGroupSlice = createSlice({
         group.codes = group.codes.filter((c) => c !== action.payload.code);
       }
     },
+
+    // 隐藏基金固定分组
+    hideFundFixedGroupAction(state, action: PayloadAction<string>) {
+      if (!state.hiddenFundFixedGroups.includes(action.payload)) {
+        state.hiddenFundFixedGroups.push(action.payload);
+      }
+    },
+
+    // 显示基金固定分组
+    showFundFixedGroupAction(state, action: PayloadAction<string>) {
+      state.hiddenFundFixedGroups = state.hiddenFundFixedGroups.filter(
+        (key) => key !== action.payload
+      );
+    },
+
+    // 隐藏股票固定分组
+    hideStockFixedGroupAction(state, action: PayloadAction<string>) {
+      if (!state.hiddenStockFixedGroups.includes(action.payload)) {
+        state.hiddenStockFixedGroups.push(action.payload);
+      }
+    },
+
+    // 显示股票固定分组
+    showStockFixedGroupAction(state, action: PayloadAction<string>) {
+      state.hiddenStockFixedGroups = state.hiddenStockFixedGroups.filter(
+        (key) => key !== action.payload
+      );
+    },
   },
 });
 
@@ -200,6 +232,10 @@ export const {
   updateStockGroupOrderAction,
   updateFundAllGroupOrderAction,
   updateStockAllGroupOrderAction,
+  hideFundFixedGroupAction,
+  showFundFixedGroupAction,
+  hideStockFixedGroupAction,
+  showStockFixedGroupAction,
 } = customGroupSlice.actions;
 
 export default customGroupSlice.reducer;

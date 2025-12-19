@@ -21,6 +21,10 @@ import {
   addCodeToStockGroupAction,
   removeCodeFromFundGroupAction,
   removeCodeFromStockGroupAction,
+  hideFundFixedGroupAction,
+  showFundFixedGroupAction,
+  hideStockFixedGroupAction,
+  showStockFixedGroupAction,
 } from '@/store/features/customGroup';
 import * as CONST from '@/constants';
 
@@ -79,7 +83,7 @@ const configListener = () => {
   // 自定义分组保存监听
   const saveCustomGroups = (getState: any) => {
     const state = getState();
-    const { fundGroups, stockGroups, fundGroupOrder, stockGroupOrder, fundAllGroupOrder, stockAllGroupOrder } = state.customGroup;
+    const { fundGroups, stockGroups, fundGroupOrder, stockGroupOrder, fundAllGroupOrder, stockAllGroupOrder, hiddenFundFixedGroups, hiddenStockFixedGroups } = state.customGroup;
     electronStore.set('config', CONST.STORAGE.CUSTOM_GROUP_SETTING, {
       fundGroups,
       stockGroups,
@@ -87,6 +91,8 @@ const configListener = () => {
       stockGroupOrder,
       fundAllGroupOrder,
       stockAllGroupOrder,
+      hiddenFundFixedGroups,
+      hiddenStockFixedGroups,
     });
   };
 
@@ -170,6 +176,30 @@ const configListener = () => {
   });
   listenerMiddleware.startListening({
     actionCreator: updateStockAllGroupOrderAction,
+    effect: async (action, { getState }) => {
+      saveCustomGroups(getState);
+    },
+  });
+  listenerMiddleware.startListening({
+    actionCreator: hideFundFixedGroupAction,
+    effect: async (action, { getState }) => {
+      saveCustomGroups(getState);
+    },
+  });
+  listenerMiddleware.startListening({
+    actionCreator: showFundFixedGroupAction,
+    effect: async (action, { getState }) => {
+      saveCustomGroups(getState);
+    },
+  });
+  listenerMiddleware.startListening({
+    actionCreator: hideStockFixedGroupAction,
+    effect: async (action, { getState }) => {
+      saveCustomGroups(getState);
+    },
+  });
+  listenerMiddleware.startListening({
+    actionCreator: showStockFixedGroupAction,
     effect: async (action, { getState }) => {
       saveCustomGroups(getState);
     },

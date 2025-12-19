@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Modal, Button, Empty } from 'antd';
+import { Modal, Button, Empty, Space } from 'antd';
 import { RiDragDropLine } from 'react-icons/ri';
 import { useAppSelector, useAppDispatch } from '@/utils/hooks';
 import {
   updateFundAllGroupOrderAction,
   updateStockAllGroupOrderAction,
+  hideFundFixedGroupAction,
+  showFundFixedGroupAction,
+  hideStockFixedGroupAction,
+  showStockFixedGroupAction,
 } from '@/store/features/customGroup';
+import { stockTypesConfig } from '@/components/Toolbar/AppCenterContent/StockSearch';
 import styles from './index.module.css';
 
 interface GroupSortManagerProps {
@@ -26,6 +31,8 @@ const GroupSortManager: React.FC<GroupSortManagerProps> = ({ visible, type, onCl
   const fundAllGroupOrder = useAppSelector((state) => state.customGroup.fundAllGroupOrder);
   const stockGroups = useAppSelector((state) => state.customGroup.stockGroups);
   const stockAllGroupOrder = useAppSelector((state) => state.customGroup.stockAllGroupOrder);
+  const hiddenFundFixedGroups = useAppSelector((state) => state.customGroup.hiddenFundFixedGroups);
+  const hiddenStockFixedGroups = useAppSelector((state) => state.customGroup.hiddenStockFixedGroups);
 
   // 定义固定分组
   const fixedFundGroups: GroupItem[] = [
@@ -39,25 +46,30 @@ const GroupSortManager: React.FC<GroupSortManagerProps> = ({ visible, type, onCl
   const fixedStockGroups: GroupItem[] = [
     { key: String(-1), label: '全部', isFixed: true },
     { key: String(-2), label: '持有', isFixed: true },
-    // 股票类型会从 stockTypesConfig 动态添加
+    ...stockTypesConfig.map((type) => ({
+      key: String(type.code),
+      label: type.name,
+      isFixed: true,
+    })),
   ];
 
   // 使用 useMemo 构建所有分组列表，响应式更新
   const allGroups = useMemo(() => {
+    const hidden = type === 'fund' ? hiddenFundFixedGroups : hiddenStockFixedGroups;
     if (type === 'fund') {
       return [
-        ...fixedFundGroups,
+        ...fixedFundGroups.filter(g => !hidden.includes(g.key)),
         { key: 'fund-ungrouped', label: '未分组', isFixed: true },
         ...fundGroups.map((g) => ({ key: `fund-group-${g.id}`, label: g.name, isFixed: false })),
       ];
     } else {
       return [
-        ...fixedStockGroups,
+        ...fixedStockGroups.filter(g => !hidden.includes(g.key)),
         { key: 'stock-ungrouped', label: '未分组', isFixed: true },
         ...stockGroups.map((g) => ({ key: `stock-group-${g.id}`, label: g.name, isFixed: false })),
       ];
     }
-  }, [type, fundGroups, stockGroups]);
+  }, [type, fundGroups, stockGroups, hiddenFundFixedGroups, hiddenStockFixedGroups]);
 
   const savedOrder = type === 'fund' ? fundAllGroupOrder : stockAllGroupOrder;
 
@@ -122,6 +134,31 @@ const GroupSortManager: React.FC<GroupSortManagerProps> = ({ visible, type, onCl
     setDraggedIndex(null);
   };
 
+  const handleToggleFixedGroup = (key: string) => {
+    if (type === 'fund') {
+      if (hiddenFundFixedGroups.includes(key)) {
+        dispatch(showFundFixedGroupAction(key));
+      } else {
+        dispatch(hideFundFixedGroupAction(key));
+      }
+    } else {
+      if (hiddenStockFixedGroups.includes(key)) {
+        dispatch(showStockFixedGroupAction(key));
+      } else {
+        dispatch(hideStockFixedGroupAction(key));
+      }
+    }
+  };
+
+  // 获取所有可用的固定分组（包括隐藏的）
+  const allFixedGroups = useMemo(() => {
+    if (type === 'fund') {
+      return fixedFundGroups;
+    } else {
+      return fixedStockGroups;
+    }
+  }, [type]);
+
   return (
     <Modal
       title={`排序${type === 'fund' ? '基金' : '股票'}分组`}
@@ -138,8 +175,28 @@ const GroupSortManager: React.FC<GroupSortManagerProps> = ({ visible, type, onCl
           保存
         </Button>,
       ]}
-      width={500}
+      width={600}
     >
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 12 }}>
+          <h4>隐藏的固定分组</h4>
+          <Space wrap>
+            {allFixedGroups.map((group) => {
+              const hidden = type === 'fund' ? hiddenFundFixedGroups : hiddenStockFixedGroups;
+              return hidden.includes(group.key) ? (
+                <Button
+                  key={group.key}
+                  size="small"
+                  onClick={() => handleToggleFixedGroup(group.key)}
+                >
+                  {group.label} (点击还原)
+                </Button>
+              ) : null;
+            })}
+          </Space>
+        </div>
+      </div>
+
       {localOrder.length === 0 ? (
         <Empty description="暂无分组" />
       ) : (
@@ -155,7 +212,16 @@ const GroupSortManager: React.FC<GroupSortManagerProps> = ({ visible, type, onCl
             >
               <RiDragDropLine size={16} className={styles.dragHandle} />
               <span>{group.label}</span>
-              {group.isFixed && <span className={styles.badge}>固定</span>}
+              {group.isFixed && (
+                <span
+                  className={styles.badge}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleToggleFixedGroup(group.key)}
+                  title="点击隐藏此固定分组"
+                >
+                  固定 ✕
+                </span>
+              )}
             </div>
           ))}
         </div>

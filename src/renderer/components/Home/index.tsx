@@ -38,6 +38,7 @@ function FundGroup() {
   const codeMap = useAppSelector((state) => state.wallet.fundConfigCodeMap);
   const fundGroups = useAppSelector((state) => state.customGroup.fundGroups);
   const fundAllGroupOrder = useAppSelector((state) => state.customGroup.fundAllGroupOrder);
+  const hiddenFundFixedGroups = useAppSelector((state) => state.customGroup.hiddenFundFixedGroups);
 
   // 固定分组的key列表
   const fixedGroupKeys = ['0', '1', '2', '3', '4'];
@@ -77,9 +78,9 @@ function FundGroup() {
     group.codes.forEach((code) => groupedFundCodes.add(code));
   });
 
-  // 构建所有分组项目
+  // 构建所有分组项目（过滤掉隐藏的固定分组）
   const allGroupItems = [
-    ...fixedGroups.map((g) => ({
+    ...fixedGroups.filter(g => !hiddenFundFixedGroups.includes(g.key)).map((g) => ({
       key: g.key,
       label: g.label,
       children: <FundView filter={g.filter} />,
@@ -186,6 +187,7 @@ function StockGroup() {
   const codeMap = useAppSelector((state) => state.wallet.stockConfigCodeMap);
   const stockGroups = useAppSelector((state) => state.customGroup.stockGroups);
   const stockAllGroupOrder = useAppSelector((state) => state.customGroup.stockAllGroupOrder);
+  const hiddenStockFixedGroups = useAppSelector((state) => state.customGroup.hiddenStockFixedGroups);
 
   // 获取所有已分组的代码（只从自定义分组）
   const groupedStockCodes = new Set<string>();
@@ -193,8 +195,8 @@ function StockGroup() {
     group.codes.forEach((code) => groupedStockCodes.add(code));
   });
 
-  // 构建所有分组项目
-  const allGroupItems = [
+  // 构建所有分组项目（过滤掉隐藏的固定分组）
+  const fixedStockItems = [
     {
       key: String(-1),
       label: '全部',
@@ -210,6 +212,10 @@ function StockGroup() {
       label: type.name,
       children: <StockView filter={(stock) => codeMap[stock.secid].type === type.code} />,
     })),
+  ];
+
+  const allGroupItems = [
+    ...fixedStockItems.filter(g => !hiddenStockFixedGroups.includes(g.key as string)),
     {
       key: 'stock-ungrouped',
       label: '未分组',
